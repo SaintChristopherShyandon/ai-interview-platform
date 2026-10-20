@@ -48,11 +48,11 @@ jobs:
           bundler-cache: true
           working-directory: api
       - name: Create database and run migrations
-        run: bin/rails db:create db:migrate
+        run: bundle exec rails db:create db:migrate
       - name: Migrations are reversible (rollback the newest, then re-apply)
         run: |
-          bin/rails db:rollback STEP=1
-          bin/rails db:migrate
+          bundle exec rails db:rollback STEP=1
+          bundle exec rails db:migrate
       - name: schema.rb is in sync with the migrations
         run: git diff --exit-code db/schema.rb
       - name: RSpec
