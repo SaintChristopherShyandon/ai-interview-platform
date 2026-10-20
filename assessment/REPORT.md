@@ -26,6 +26,7 @@ Type: **D** = defective implementation (defined, broken). **S** = missing specif
 | 9 | P2 | D | api | Duplicate vacancy skills collapse arbitrarily (`index_by`). | Lenient requirement may win over the strict one. |
 | 10 | P2 | D | web | Discovered skills show a raw number ("3 (confirmed)"); labels use emoji only; table does not collapse on phones. | Hard to read, poor accessibility. |
 | 11 | P2 | D | api | `assessor_notes` unbounded. | Oversized free text stored and exported. |
+| 13 | P1 | D | api | PDF export raises 500 on any character outside Windows-1252: it prints "→" itself for every overridden skill, and candidate quotes, role titles or AI text with emoji or non-Latin characters do the same. Found by running the real stack, not by reading code. | Export fails exactly for the candidates a human reviewed. |
 | 12 | P3 | S | both | No tests, no CI, no test runner on web. | Nothing protects any of the above. |
 
 **Constraint signal (escalate to Tech Lead).**
@@ -73,10 +74,11 @@ I chose **B**; C is the follow-up once consumers of the stored JSON are known.
 | Item | Status |
 |---|---|
 | Web: typecheck, 26 Vitest tests, production build | **DONE** (run locally, all green) |
-| API: RSpec (comparator, engine, request, worker, migration specs) | **DONE** locally: 60 examples, 0 failures (Ruby 3.3.12, Postgres 18, migrations applied from scratch). Also to be re-run in CI on Ruby 3.3.2. Running them found a real bug (exclusion validator rejected an empty array), fixed in 38f9630. |
+| API: RSpec (comparator, engine, request, export, worker, migration specs) | **DONE** locally: 65 examples, 0 failures (Ruby 3.3.12, Postgres 18, migrations from scratch). Running them found a real bug (exclusion validator rejected an empty array), fixed in 38f9630. The PDF crash spec was watched failing (3 failures) without the fix and passing with it. |
+| Full stack run per the READMEs | **DONE** on Windows: Redis (portable community build, because the Memurai MSI is blocked by policy), Sidekiq, Rails on 3001, web on 5173 with .env, db:migrate + db:seed + demo data. Verified with curl and a browser: POST fitgap returns the table immediately (202), Sidekiq runs the job, with a fake Gemini key the narrative becomes failed with a factual fallback, the log contains only the error class, override updates the table instantly with no 404 window, another tenant gets 404 on read and export, bad input gets 404/422, no token gets 403, PDF/JSON export return 200. 0 browser console errors; portfolio -> choose vacancy -> Fit/Gap flow works. |
 | Migration applies from scratch and is reversible | Applied from scratch **DONE**; rollback + re-apply covered by migration spec (**DONE**) and a CI step; schema.rb matched the generated one. |
 | Seeded fault test | **DONE**: branch scratch/seeded-faults, 4 faults each committed, shown failing, then reverted (see assessment/seeded-fault-log.txt): tenant scope dropped (request spec fails), unassessed->gap (6 comparator specs fail), stale-input check removed (engine spec fails), UI wrong key (3 Vitest fail). After each revert the suite is green again. |
-| Screenshots (states, mobile, before/after) | **DONE**: assessment/screenshots (taken with Playwright against the real web app; API responses stubbed per state, since a full Rails+Redis+Gemini stack is not available locally). |
+| Screenshots (states, mobile, before/after, real stack) | **DONE**: assessment/screenshots. Edge states (updating, failed, nothing assessed, empty, error, loading) use stubbed API responses; real-0x-*.png come from the real stack. |
 | 3-5 min video | **TODO (author to record)** |
 | Pull Request link | **TODO**: branch is intentionally unpublished until the author approves. |
 
@@ -89,6 +91,8 @@ A second risk I corrected in review: my first controller draft looked up portfol
 ### Known limits (honest)
 
 - CI itself has not run yet (needs a push); local runs use Ruby 3.3.12 instead of the pinned 3.3.2 via an untracked local Gemfile copy.
+- Gemini was never called for real (no key): the "ready" narrative path is covered by specs with a fake client, the failure path was also exercised end to end.
+- Windows run notes: Puma needs WEB_CONCURRENCY=0 (worker mode is unsupported), the tzinfo-data gem is needed, ALLOWED_ORIGINS and APP_BASE_URL are required at boot, api/README says ai-interview-web but the folder is web, and web/README mixes ports 3000 and 3001 (3001 is correct).
 - `portfolio_skills.skill_id` / `vacancy_skills.skill_id` are free strings; matching by label is a heuristic.
 - No candidate-facing notice or objection flow yet (recommended next step for UU PDP).
 - Export JSON now includes `summary` and `narrative_status`; external consumers of the old shape keep `expected_level`.
