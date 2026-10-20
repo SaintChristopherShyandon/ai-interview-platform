@@ -33,7 +33,7 @@ export function sortComparisons(comparisons: SkillComparison[]): SkillComparison
  * Accept both so a stale cache or an older deployment never renders "undefined".
  */
 export function normalizeComparison(raw: SkillComparison & { expected_level?: number }): SkillComparison {
-  return { ...raw, required_level: raw.required_level ?? raw.expected_level ?? 0 };
+  return { ...raw, required_level: (raw as any).requiredLevel ?? 0 };
 }
 
 /** Rebuilds the summary from rows, for reports that predate the server-side summary. */
