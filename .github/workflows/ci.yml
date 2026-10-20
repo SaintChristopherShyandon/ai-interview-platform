@@ -38,6 +38,8 @@ jobs:
       # Throw-away values for the test run only; real secrets never live in the repo.
       SECRET_KEY_BASE: ci-only-not-a-secret-0123456789abcdef0123456789abcdef
       GEMINI_API_KEY: ci-only-fake-key
+      ALLOWED_ORIGINS: http://localhost:5173
+      APP_BASE_URL: http://localhost:3001
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
