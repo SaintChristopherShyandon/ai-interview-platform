@@ -26,8 +26,8 @@ Type: **D** = defective implementation (defined, broken). **S** = missing specif
 | 9 | P2 | D | api | Duplicate vacancy skills collapse arbitrarily (`index_by`). | Lenient requirement may win over the strict one. |
 | 10 | P2 | D | web | Discovered skills show a raw number ("3 (confirmed)"); labels use emoji only; table does not collapse on phones. | Hard to read, poor accessibility. |
 | 11 | P2 | D | api | `assessor_notes` unbounded. | Oversized free text stored and exported. |
-| 13 | P1 | D | api | PDF export raises 500 on any character outside Windows-1252: it prints "→" itself for every overridden skill, and candidate quotes, role titles or AI text with emoji or non-Latin characters do the same. Found by running the real stack, not by reading code. | Export fails exactly for the candidates a human reviewed. |
 | 12 | P3 | S | both | No tests, no CI, no test runner on web. | Nothing protects any of the above. |
+| 13 | P1 | D | api | PDF export raises 500 on any character outside Windows-1252: it prints "→" itself for every overridden skill, and candidate quotes, role titles or AI text with emoji or non-Latin characters do the same. Found by running the real stack, not by reading code. | Export fails exactly for the candidates a human reviewed. |
 
 **Constraint signal (escalate to Tech Lead).**
 1. Tenancy is by convention (`TenantScoped` on some models, none on Portfolio/FitGapReport); finding 1 is a class of bug, not one bug. Needs a decision: tenant_id on every table vs. always going through Session.
