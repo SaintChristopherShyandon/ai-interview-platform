@@ -31,7 +31,7 @@ Type: **D** = defective implementation (defined, broken). **S** = missing specif
 **Constraint signal (escalate to Tech Lead).**
 1. Tenancy is by convention (`TenantScoped` on some models, none on Portfolio/FitGapReport); finding 1 is a class of bug, not one bug. Needs a decision: tenant_id on every table vs. always going through Session.
 2. All AI levels and narratives are unvalidated against ground truth; before this informs hiring we need an agreed review/consent flow for candidates (UU PDP notice, access, objection).
-3. Local dev on Windows with application-control policy cannot load Ruby native gems: backend verification must happen in CI.
+3. Local dev on Windows can need extra setup (tzinfo-data gem; Smart App Control blocked native Ruby extensions until the user reinstalled Ruby).
 4. `db/schema.rb` and enum types live in a schema (`ai_interview`) shared with another service (rakamin-api); migrations here must stay additive.
 
 ## Step 4. Strategy
@@ -73,9 +73,9 @@ I chose **B**; C is the follow-up once consumers of the stored JSON are known.
 | Item | Status |
 |---|---|
 | Web: typecheck, 26 Vitest tests, production build | **DONE** (run locally, all green) |
-| API: RSpec (comparator, engine, request, worker, migration specs) | **TODO**: written, not yet executed. Ruby native gems are blocked by Windows Smart App Control on this machine, so they must run in GitHub Actions (`.github/workflows/ci.yml`). |
-| Migration rollback + re-apply + schema.rb in sync | **TODO** in CI. `db/schema.rb` was edited by hand and the CI step will tell if it differs from the generated one. |
-| Seeded fault test | **TODO**: needs CI. Planned: on a scratch branch (a) drop the tenant scope in `find_portfolio`, (b) make `not_assessed` return `gap`, (c) remove the stale-digest check; show each spec failing, then revert with history visible. Web equivalent can be run locally. |
+| API: RSpec (comparator, engine, request, worker, migration specs) | **DONE** locally: 60 examples, 0 failures (Ruby 3.3.12, Postgres 18, migrations applied from scratch). Also to be re-run in CI on Ruby 3.3.2. Running them found a real bug (exclusion validator rejected an empty array), fixed in 38f9630. |
+| Migration applies from scratch and is reversible | Applied from scratch **DONE**; rollback + re-apply covered by migration spec (**DONE**) and a CI step; schema.rb matched the generated one. |
+| Seeded fault test | **DONE**: branch scratch/seeded-faults, 4 faults each committed, shown failing, then reverted (see assessment/seeded-fault-log.txt): tenant scope dropped (request spec fails), unassessed->gap (6 comparator specs fail), stale-input check removed (engine spec fails), UI wrong key (3 Vitest fail). After each revert the suite is green again. |
 | Screenshots (states, mobile) and 3-5 min video | **TODO** (needs a running app + GIF/recording by the candidate) |
 
 ### AI verification moment (real, from this work)
@@ -86,7 +86,7 @@ A second risk I corrected in review: my first controller draft looked up portfol
 
 ### Known limits (honest)
 
-- Backend behaviour is unverified until CI runs.
+- CI itself has not run yet (needs a push); local runs use Ruby 3.3.12 instead of the pinned 3.3.2 via an untracked local Gemfile copy.
 - `portfolio_skills.skill_id` / `vacancy_skills.skill_id` are free strings; matching by label is a heuristic.
 - No candidate-facing notice or objection flow yet (recommended next step for UU PDP).
 - Export JSON now includes `summary` and `narrative_status`; external consumers of the old shape keep `expected_level`.
