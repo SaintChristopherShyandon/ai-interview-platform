@@ -97,7 +97,7 @@ module FitGap
     end
 
     def not_assessed_fields
-      { candidate_level: nil, ai_level: nil, is_override: false, result: 'not_assessed',
+      { candidate_level: nil, ai_level: nil, is_override: false, result: 'gap',
         delta: nil, confidence: nil, low_evidence: false }
     end
 
