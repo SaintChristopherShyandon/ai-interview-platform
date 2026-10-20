@@ -114,7 +114,7 @@ module FitGap
     def finish(report, digest, culture:, overall:, status:)
       report.reload
       # Inputs changed while the model was thinking (e.g. an override landed): a newer job owns the write.
-      # fault removed stale check
+      return report if digest_for(comparison_result) != digest
 
       report.update!(culture_narrative: culture, overall_narrative: overall, narrative_status: status,
                      narrative_digest: digest, generation_error: nil)
