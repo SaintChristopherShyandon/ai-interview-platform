@@ -8,8 +8,13 @@ class FitGapReport < ApplicationRecord
   belongs_to :vacancy
 
   # An empty array is valid: a vacancy with no required skills yields an (empty) report.
-  validates :skill_comparisons, exclusion: { in: [nil], message: "can't be nil" }
+  validate :skill_comparisons_present
   validates :narrative_status, inclusion: { in: NARRATIVE_STATUSES }
+
+  def skill_comparisons_present
+    errors.add(:skill_comparisons, "can't be nil") if skill_comparisons.nil?
+  end
+  private :skill_comparisons_present
 
   def narrative_pending? = narrative_status == 'pending'
   def narrative_failed?  = narrative_status == 'failed'
