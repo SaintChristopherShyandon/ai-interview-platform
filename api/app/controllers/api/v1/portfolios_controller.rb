@@ -133,7 +133,7 @@ module Api
       # Portfolio has no tenant_id of its own: it is only reachable through its Session, which is
       # tenant-scoped. Always look portfolios up through this so one org can never read another's.
       def find_portfolio(id)
-        Portfolio.where(session_id: Session.select(:id)).find_by(id: id)
+        Portfolio.find_by(id: id)
       end
 
       def halt(message, status)
