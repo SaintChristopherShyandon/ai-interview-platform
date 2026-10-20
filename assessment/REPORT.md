@@ -1,6 +1,6 @@
 # Evidence-aware Fit/Gap: case study report (draft)
 
-Branch: `feat/evidence-aware-fitgap` (not published yet). Status of each proof item is marked **DONE** or **TODO**.
+Branch: `feat/evidence-aware-fitgap` (not published yet). Local Windows setup notes: Ruby 3.3 + DevKit, PostgreSQL, `tzinfo-data` gem, env vars ALLOWED_ORIGINS/APP_BASE_URL are required at boot. Status of each proof item is marked **DONE** or **TODO**.
 
 ## Step 2. Context (what I took from the product, domain and law)
 
@@ -76,7 +76,9 @@ I chose **B**; C is the follow-up once consumers of the stored JSON are known.
 | API: RSpec (comparator, engine, request, worker, migration specs) | **DONE** locally: 60 examples, 0 failures (Ruby 3.3.12, Postgres 18, migrations applied from scratch). Also to be re-run in CI on Ruby 3.3.2. Running them found a real bug (exclusion validator rejected an empty array), fixed in 38f9630. |
 | Migration applies from scratch and is reversible | Applied from scratch **DONE**; rollback + re-apply covered by migration spec (**DONE**) and a CI step; schema.rb matched the generated one. |
 | Seeded fault test | **DONE**: branch scratch/seeded-faults, 4 faults each committed, shown failing, then reverted (see assessment/seeded-fault-log.txt): tenant scope dropped (request spec fails), unassessed->gap (6 comparator specs fail), stale-input check removed (engine spec fails), UI wrong key (3 Vitest fail). After each revert the suite is green again. |
-| Screenshots (states, mobile) and 3-5 min video | **TODO** (needs a running app + GIF/recording by the candidate) |
+| Screenshots (states, mobile, before/after) | **DONE**: assessment/screenshots (taken with Playwright against the real web app; API responses stubbed per state, since a full Rails+Redis+Gemini stack is not available locally). |
+| 3-5 min video | **TODO (author to record)** |
+| Pull Request link | **TODO**: branch is intentionally unpublished until the author approves. |
 
 ### AI verification moment (real, from this work)
 
